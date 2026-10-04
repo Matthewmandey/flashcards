@@ -1,0 +1,1123 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#f5f5f7" />
+    <title>Recall — Flashcards</title>
+
+    <style>
+      :root {
+        --bg: #f5f5f7;
+        --surface: rgba(255, 255, 255, 0.78);
+        --card: #fff;
+        --text: #171717;
+        --muted: #777;
+        --border: rgba(0, 0, 0, 0.07);
+        --accent: #111;
+        --accentText: #fff;
+        --soft: rgba(0, 0, 0, 0.055);
+        --shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+      }
+
+      html.dark {
+        --bg: #0d0d0f;
+        --surface: rgba(28, 28, 31, 0.78);
+        --card: #18181b;
+        --text: #f5f5f7;
+        --muted: #96969d;
+        --border: rgba(255, 255, 255, 0.08);
+        --accent: #f5f5f7;
+        --accentText: #111;
+        --soft: rgba(255, 255, 255, 0.08);
+        --shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+      }
+
+      * {
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      html {
+        color-scheme: light;
+        transition: background 0.25s ease;
+      }
+      html.dark {
+        color-scheme: dark;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
+          sans-serif;
+        background:
+          radial-gradient(
+            circle at 15% 0%,
+            rgba(255, 255, 255, 0.9),
+            transparent 34%
+          ),
+          var(--bg);
+        color: var(--text);
+        transition:
+          background 0.3s ease,
+          color 0.3s ease;
+      }
+
+      html.dark body {
+        background:
+          radial-gradient(
+            circle at 85% 0%,
+            rgba(255, 255, 255, 0.055),
+            transparent 32%
+          ),
+          var(--bg);
+      }
+
+      button {
+        font: inherit;
+        border: 0;
+        cursor: pointer;
+        color: inherit;
+      }
+
+      .app {
+        width: 100%;
+        max-width: 1180px;
+        min-height: 100vh;
+        margin: auto;
+        padding: 24px 18px 34px;
+      }
+
+      .view {
+        display: none;
+        animation: pageIn 0.35s ease;
+      }
+      .view.active {
+        display: block;
+      }
+
+      @keyframes pageIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* HOME */
+      .home-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 18px;
+        padding: 22px 4px 30px;
+      }
+
+      .home-heading {
+        flex: 1;
+      }
+
+      .eyebrow {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--muted);
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+      }
+
+      .home-title {
+        font-size: clamp(34px, 7vw, 54px);
+        line-height: 1;
+        letter-spacing: -0.06em;
+        margin: 8px 0 11px;
+        font-weight: 780;
+      }
+
+      .home-subtitle {
+        color: var(--muted);
+        margin: 0;
+        font-size: 15px;
+      }
+
+      .theme-btn {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        box-shadow: 0 7px 24px rgba(0, 0, 0, 0.045);
+        font-size: 19px;
+        transition:
+          transform 0.2s ease,
+          background 0.25s ease;
+      }
+
+      .theme-btn:active {
+        transform: scale(0.92);
+      }
+
+      .material-list {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 13px;
+      }
+
+      .material {
+        width: 100%;
+        min-height: 154px;
+        text-align: left;
+        padding: 22px;
+        border-radius: 26px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.035);
+        backdrop-filter: blur(18px);
+        transition:
+          transform 0.2s ease,
+          box-shadow 0.2s ease,
+          background 0.25s ease;
+      }
+
+      .material:active {
+        transform: scale(0.975);
+      }
+
+      .material-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .material-number {
+        font-size: 12px;
+        font-weight: 750;
+        color: var(--muted);
+      }
+
+      .material-arrow {
+        width: 31px;
+        height: 31px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: var(--soft);
+      }
+
+      .material-name {
+        font-size: 21px;
+        font-weight: 720;
+        letter-spacing: -0.03em;
+        margin-top: 27px;
+      }
+
+      .material-count {
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 5px;
+      }
+
+      /* STUDY */
+      .study-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+
+      .icon-btn {
+        width: 42px;
+        height: 42px;
+        flex: 0 0 auto;
+        border-radius: 50%;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.04);
+      }
+
+      .study-info {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .study-material {
+        font-weight: 720;
+        font-size: 16px;
+      }
+
+      .study-position {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 2px;
+      }
+
+      .mode-btn {
+        padding: 9px 13px;
+        border-radius: 999px;
+        background: var(--soft);
+        font-size: 12px;
+        font-weight: 650;
+        white-space: nowrap;
+      }
+
+      .study-theme {
+        display: none;
+      }
+
+      .progress {
+        height: 4px;
+        width: 100%;
+        background: var(--soft);
+        border-radius: 99px;
+        overflow: hidden;
+        margin-bottom: 26px;
+      }
+
+      .progress-fill {
+        height: 100%;
+        width: 0%;
+        background: var(--accent);
+        border-radius: inherit;
+        transition:
+          width 0.4s ease,
+          background 0.25s ease;
+      }
+
+      /* FLIP CARD */
+      .card-scene {
+        width: 100%;
+        height: min(70vw, 520px);
+        min-height: 320px;
+        perspective: 1200px;
+      }
+
+      .flashcard {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.65s cubic-bezier(0.2, 0.75, 0.25, 1);
+        cursor: pointer;
+        user-select: none;
+      }
+
+      .flashcard.flipped {
+        transform: rotateY(180deg);
+      }
+
+      .card-face {
+        position: absolute;
+        inset: 0;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        border-radius: 32px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow);
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        overflow: hidden;
+        transition: background 0.25s ease;
+      }
+
+      .card-face::before {
+        content: "";
+        position: absolute;
+        width: 190px;
+        height: 190px;
+        border-radius: 50%;
+        background: var(--soft);
+        top: -90px;
+        right: -70px;
+      }
+
+      .card-back {
+        transform: rotateY(180deg);
+      }
+
+      .card-label {
+        position: absolute;
+        top: 24px;
+        left: 28px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-weight: 700;
+        color: var(--muted);
+      }
+
+      .card-content {
+        max-width: 90%;
+        position: relative;
+        z-index: 1;
+      }
+
+      .card-term {
+        font-size: clamp(28px, 7vw, 48px);
+        line-height: 1.08;
+        letter-spacing: -0.045em;
+        font-weight: 760;
+      }
+
+      .card-definition {
+        font-size: clamp(18px, 4vw, 27px);
+        line-height: 1.45;
+        letter-spacing: -0.02em;
+        font-weight: 550;
+      }
+
+      .tap-hint {
+        position: absolute;
+        bottom: 24px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      /* NAVIGATION */
+      .controls {
+        display: grid;
+        grid-template-columns: 1fr 1.25fr;
+        gap: 10px;
+        margin-top: 18px;
+      }
+
+      .control {
+        min-height: 54px;
+        border-radius: 18px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        font-weight: 650;
+        transition:
+          transform 0.18s ease,
+          opacity 0.18s ease,
+          background 0.25s ease;
+      }
+
+      .control:active {
+        transform: scale(0.96);
+      }
+
+      .control.primary {
+        background: var(--accent);
+        color: var(--accentText);
+      }
+
+      .control:disabled {
+        opacity: 0.3;
+        cursor: default;
+      }
+
+      /* MODE SHEET */
+      .mode-sheet {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: none;
+        align-items: flex-end;
+        background: rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(5px);
+      }
+
+      .mode-sheet.show {
+        display: flex;
+      }
+
+      .sheet {
+        width: 100%;
+        max-width: 600px;
+        margin: auto;
+        background: var(--card);
+        border-radius: 30px 30px 0 0;
+        padding: 25px 20px 30px;
+        animation: sheetUp 0.3s ease;
+      }
+
+      @keyframes sheetUp {
+        from {
+          transform: translateY(100%);
+        }
+        to {
+          transform: translateY(0);
+        }
+      }
+
+      .sheet-title {
+        font-size: 20px;
+        font-weight: 750;
+        margin-bottom: 15px;
+      }
+
+      .mode-option {
+        width: 100%;
+        padding: 17px;
+        border-radius: 17px;
+        background: var(--soft);
+        margin-top: 8px;
+        text-align: left;
+        font-weight: 650;
+      }
+
+      .mode-option.active {
+        outline: 2px solid var(--accent);
+      }
+
+      .close-sheet {
+        margin-top: 12px;
+        width: 100%;
+        padding: 15px;
+        border-radius: 17px;
+        background: var(--accent);
+        color: var(--accentText);
+        font-weight: 650;
+      }
+
+      /* DESKTOP */
+      @media (min-width: 700px) {
+        .app {
+          padding: 42px 28px 50px;
+        }
+
+        .material-list {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 16px;
+        }
+
+        .material {
+          min-height: 180px;
+          padding: 25px;
+        }
+
+        .material:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 15px 42px rgba(0, 0, 0, 0.075);
+        }
+
+        .card-scene {
+          height: min(58vh, 520px);
+          max-width: 900px;
+          margin: auto;
+        }
+
+        .controls {
+          max-width: 900px;
+          margin: 18px auto 0;
+        }
+
+        .study-header,
+        .progress {
+          max-width: 900px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        .study-theme {
+          display: grid;
+        }
+      }
+
+      /* WIDE DESKTOP */
+      @media (min-width: 1050px) {
+        .material-list {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .material {
+          min-height: 190px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <!-- HOME -->
+      <section id="homeView" class="view active">
+        <header class="home-header">
+          <div class="home-heading">
+            <div class="eyebrow">Flashcards</div>
+            <h1 class="home-title">English Enginnerimg.</h1>
+            <p class="home-subtitle">Choose what topic you want to remember.</p>
+          </div>
+
+          <button class="theme-btn" id="themeBtn" aria-label="Ubah tema">
+            ☾
+          </button>
+        </header>
+
+        <div id="materialList" class="material-list"></div>
+      </section>
+
+      <!-- STUDY -->
+      <section id="studyView" class="view">
+        <header class="study-header">
+          <button class="icon-btn" id="homeBtn" aria-label="Home">←</button>
+
+          <div class="study-info">
+            <div class="study-material" id="studyMaterial">Materi</div>
+            <div class="study-position" id="studyPosition">Card 1 / 10</div>
+          </div>
+
+          <button class="mode-btn" id="modeBtn">Mixed</button>
+          <button
+            class="theme-btn study-theme"
+            id="studyThemeBtn"
+            aria-label="Ubah tema"
+          >
+            ☾
+          </button>
+        </header>
+
+        <div class="progress">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <div class="card-scene">
+          <div class="flashcard" id="flashcard">
+            <div class="card-face card-front">
+              <div class="card-label" id="frontLabel">Istilah</div>
+              <div class="card-content">
+                <div class="card-term" id="frontContent">Himpunan</div>
+              </div>
+              <div class="tap-hint">Tap to see </div>
+            </div>
+
+            <div class="card-face card-back">
+              <div class="card-label" id="backLabel">Definisi</div>
+              <div class="card-content">
+                <div class="card-definition" id="backContent">
+                  Kumpulan objek yang terdefinisi dengan jelas.
+                </div>
+              </div>
+              <div class="tap-hint">Tap to back</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button class="control" id="prevBtn">← Prev</button>
+          <button class="control primary" id="nextBtn">Next →</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- MODE SHEET -->
+    <div class="mode-sheet" id="modeSheet">
+      <div class="sheet">
+        <div class="sheet-title">Select flashcards mode</div>
+
+        <button class="mode-option" data-mode="forward">
+    Term → definition
+        </button>
+
+        <button class="mode-option" data-mode="reverse">
+          Definition → Term
+        </button>
+
+        <button class="mode-option active" data-mode="mixed">Mixed</button>
+
+        <button class="close-sheet" id="closeSheet">Selesai</button>
+      </div>
+    </div>
+
+    <script>
+      const materials = [
+        {
+          id: 1,
+          title: "Computer Hardware",
+          subtitle: "Physical components of a computer",
+          cards: [
+            {
+              term: "Hardware",
+              definition:
+                "All physical parts of a computer that can be seen and touched.",
+            },
+            {
+              term: "Input",
+              definition:
+                "The hardware function used to enter data or commands into a computer.",
+            },
+            {
+              term: "Process",
+              definition:
+                "The hardware function that processes data, mainly through the CPU with support from RAM and other components.",
+            },
+            {
+              term: "Storage",
+              definition:
+                "The hardware function used to store data, such as with an SSD, HDD, or flash drive.",
+            },
+            {
+              term: "Output",
+              definition:
+                "The hardware function used to display or present results, such as through a monitor, printer, or speakers.",
+            },
+            {
+              term: "Communication",
+              definition:
+                "The hardware function that helps a computer communicate with networks, such as through Wi-Fi or Ethernet.",
+            },
+            {
+              term: "CPU",
+              definition:
+                "The main component that executes instructions and performs calculations and logical operations.",
+            },
+            {
+              term: "RAM",
+              definition:
+                "Temporary working memory for data and programs in use; its contents are lost when power is turned off.",
+            },
+            {
+              term: "SSD / HDD",
+              definition:
+                "Storage devices that store data and the operating system persistently.",
+            },
+            {
+              term: "Keyboard",
+              definition:
+                "An input device used to enter text, numbers, and commands using keys.",
+            },
+            {
+              term: "Mouse",
+              definition:
+                "An input device used to move the pointer and select objects on the screen.",
+            },
+            {
+              term: "Monitor",
+              definition:
+                "An output device that displays text, images, video, and program interfaces.",
+            },
+            {
+              term: "Internal Device",
+              definition:
+                "A device located inside the computer case, such as the CPU, RAM, motherboard, or SSD.",
+            },
+            {
+              term: "External Device",
+              definition:
+                "A device located outside or connected from the outside, such as a keyboard, mouse, monitor, printer, or flash drive.",
+            },
+          ],
+        },
+        {
+          id: 2,
+          title: "Computer Software",
+          subtitle: "Programs and instructions",
+          cards: [
+            {
+              term: "Software",
+              definition:
+                "A program or set of instructions that tells a computer what to do.",
+            },
+            {
+              term: "Application Software",
+              definition:
+                "Software designed to help users perform specific tasks, such as word processing, browsing, design, media playback, or communication.",
+            },
+            {
+              term: "Operating System (OS)",
+              definition:
+                "Core software that manages hardware, files, memory, processes, and users, and provides a platform for applications to run.",
+            },
+            {
+              term: "Program",
+              definition:
+                "A set of instructions created to make a computer perform a specific task.",
+            },
+            {
+              term: "Web Browser",
+              definition:
+                "Software used to access and display web pages on the Internet.",
+            },
+            {
+              term: "Text Editor",
+              definition:
+                "Software for creating and editing plain text, widely used for writing source code.",
+            },
+            {
+              term: "Antivirus",
+              definition:
+                "Security software that helps detect, prevent, and remove or quarantine certain malware.",
+            },
+            {
+              term: "Database Software",
+              definition:
+                "Software used to create, store, organize, modify, and retrieve data from a database.",
+            },
+            {
+              term: "Programming Software",
+              definition:
+                "Software that helps programmers write, run, test, and fix programs, such as a code editor, compiler, interpreter, or IDE.",
+            },
+            {
+              term: "Windows",
+              definition:
+                "An operating system developed by Microsoft, used on many PCs and laptops to run applications and manage files, devices, and networks.",
+            },
+            {
+              term: "Linux",
+              definition:
+                "A family of operating systems based on the Linux kernel; many distributions are open source.",
+            },
+            {
+              term: "macOS",
+              definition:
+                "A desktop operating system developed by Apple for Mac computers.",
+            },
+            {
+              term: "MySQL",
+              definition:
+                "Database software used to store and manage data using a relational database.",
+            },
+            {
+              term: "SQLite",
+              definition:
+                "Lightweight database software that can be stored in a single file.",
+            },
+          ],
+        },
+        {
+          id: 3,
+          title: "Basic Computer & Networking",
+          subtitle: "Core computer and network terms",
+          cards: [
+            {
+              term: "BIOS",
+              definition:
+                "Basic Input/Output System; firmware that runs when a computer starts, performs initial hardware checks, and helps begin the boot process.",
+            },
+            {
+              term: "Wi-Fi",
+              definition:
+                "A technology that allows devices to connect to a network wirelessly using radio waves.",
+            },
+            {
+              term: "LAN",
+              definition:
+                "Local Area Network; a network covering a relatively small area, such as a room, home, laboratory, or campus building.",
+            },
+            {
+              term: "WAN",
+              definition:
+                "Wide Area Network; a network covering a much larger area and connecting networks across cities or countries.",
+            },
+            {
+              term: "Internet",
+              definition:
+                "A global network that uses various WAN technologies.",
+            },
+          ],
+        },
+        {
+          id: 4,
+          title: "Programming",
+          subtitle: "Core programming concepts",
+          cards: [
+            {
+              term: "Programming",
+              definition:
+                "The process of designing and writing instructions or programs so that a computer performs a specific task.",
+            },
+            {
+              term: "Programmer",
+              definition:
+                "A person who creates, tests, fixes, and maintains programs.",
+            },
+            {
+              term: "Programming Language",
+              definition:
+                "A formal language with specific rules for writing instructions that a computer processes.",
+            },
+            {
+              term: "Code",
+              definition:
+                "Instructions written in a programming language to perform a task.",
+            },
+            {
+              term: "Source Code",
+              definition:
+                "The original code written by a programmer before it is processed by a compiler or interpreter.",
+            },
+            {
+              term: "Syntax",
+              definition:
+                "The writing rules that must be followed for code to be considered valid in a programming language.",
+            },
+            {
+              term: "Variable",
+              definition:
+                "A named storage location used to hold data whose value can be used or changed by a program.",
+            },
+            {
+              term: "Function",
+              definition:
+                "A block of code created to perform a specific task and called when needed.",
+            },
+            {
+              term: "Command / Instruction",
+              definition:
+                "A command or instruction that states what a program or computer should do.",
+            },
+            {
+              term: "Algorithm",
+              definition:
+                "Logical, ordered steps for solving a problem or performing a calculation.",
+            },
+            {
+              term: "Input",
+              definition:
+                "Data or information entered into a program, such as a name, age, or number.",
+            },
+            {
+              term: "Output",
+              definition:
+                "The result produced by a program, such as on-screen text, a calculated number, or a file.",
+            },
+            {
+              term: "Debugging",
+              definition:
+                "The process of finding the cause of an error in a program and fixing it.",
+            },
+            {
+              term: "Error",
+              definition:
+                "A problem that causes a program to fail to compile, fail to run, or behave in an unintended way.",
+            },
+          ],
+        },
+        {
+          id: 5,
+          title: "Programming Languages",
+          subtitle: "Common languages and their uses",
+          cards: [
+            {
+              term: "Python",
+              definition:
+                "A programming language commonly used for web development, data, AI, automation, scripting, and education.",
+            },
+            {
+              term: "Java",
+              definition:
+                "A programming language used for applications, enterprise systems, backend development, and various platforms.",
+            },
+            {
+              term: "JavaScript",
+              definition:
+                "A programming language commonly used for website interactivity and logic; it can also be used on servers.",
+            },
+            {
+              term: "C",
+              definition:
+                "A programming language commonly used for system programming, embedded systems, and software requiring low-level control.",
+            },
+            {
+              term: "C++",
+              definition:
+                "A programming language used for games, desktop applications, engines, and system or high-performance software; it extends C with features such as object-oriented programming.",
+            },
+          ],
+        },
+      ];
+
+      let currentMaterial = null;
+      let currentCard = 0;
+      let currentMode = "mixed";
+      let currentDirection = "forward";
+
+      const homeView = document.getElementById("homeView");
+      const studyView = document.getElementById("studyView");
+      const materialList = document.getElementById("materialList");
+      const flashcard = document.getElementById("flashcard");
+      const frontLabel = document.getElementById("frontLabel");
+      const backLabel = document.getElementById("backLabel");
+      const frontContent = document.getElementById("frontContent");
+      const backContent = document.getElementById("backContent");
+      const studyMaterial = document.getElementById("studyMaterial");
+      const studyPosition = document.getElementById("studyPosition");
+      const progressFill = document.getElementById("progressFill");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const homeBtn = document.getElementById("homeBtn");
+      const modeBtn = document.getElementById("modeBtn");
+      const modeSheet = document.getElementById("modeSheet");
+      const closeSheet = document.getElementById("closeSheet");
+      const themeBtn = document.getElementById("themeBtn");
+      const studyThemeBtn = document.getElementById("studyThemeBtn");
+
+      function renderMaterials() {
+        materialList.innerHTML = "";
+        materials.forEach((material, index) => {
+          const button = document.createElement("button");
+          button.className = "material";
+          button.innerHTML = `
+      <div class="material-top">
+        <span class="material-number">${String(index + 1).padStart(2, "0")}</span>
+        <span class="material-arrow">→</span>
+      </div>
+      <div class="material-name">${material.title}</div>
+      <div class="material-count">${material.cards.length} flashcards · ${material.subtitle}</div>
+    `;
+          button.addEventListener("click", () => openMaterial(material));
+          materialList.appendChild(button);
+        });
+      }
+
+      function openMaterial(material) {
+        currentMaterial = material;
+        currentCard = 0;
+        homeView.classList.remove("active");
+        studyView.classList.add("active");
+        updateCard();
+      }
+
+      function updateCard() {
+        if (!currentMaterial) return;
+
+        const card = currentMaterial.cards[currentCard];
+        flashcard.classList.remove("flipped");
+
+        if (currentMode === "forward") {
+          currentDirection = "forward";
+        } else if (currentMode === "reverse") {
+          currentDirection = "reverse";
+        } else {
+          currentDirection = Math.random() > 0.5 ? "forward" : "reverse";
+        }
+
+        if (currentDirection === "forward") {
+          frontLabel.textContent = "Istilah";
+          frontContent.textContent = card.term;
+          backLabel.textContent = "Definisi";
+          backContent.textContent = card.definition;
+        } else {
+          frontLabel.textContent = "Definisi";
+          frontContent.textContent = card.definition;
+          backLabel.textContent = "Istilah";
+          backContent.textContent = card.term;
+        }
+
+        studyMaterial.textContent = currentMaterial.title;
+        studyPosition.textContent = `Card ${currentCard + 1} / ${currentMaterial.cards.length}`;
+
+        progressFill.style.width = `${((currentCard + 1) / currentMaterial.cards.length) * 100}%`;
+        prevBtn.disabled = currentCard === 0;
+        nextBtn.textContent =
+          currentCard === currentMaterial.cards.length - 1
+            ? "Finish ✓"
+            : "Next →";
+      }
+
+      function flipCard() {
+        flashcard.classList.toggle("flipped");
+      }
+
+      flashcard.addEventListener("click", flipCard);
+
+      nextBtn.addEventListener("click", () => {
+        if (currentCard < currentMaterial.cards.length - 1) {
+          currentCard++;
+          updateCard();
+        } else {
+          goHome();
+        }
+      });
+
+      prevBtn.addEventListener("click", () => {
+        if (currentCard > 0) {
+          currentCard--;
+          updateCard();
+        }
+      });
+
+      function goHome() {
+        studyView.classList.remove("active");
+        homeView.classList.add("active");
+        currentMaterial = null;
+      }
+
+      homeBtn.addEventListener("click", goHome);
+
+      modeBtn.addEventListener("click", () => modeSheet.classList.add("show"));
+
+      document.querySelectorAll(".mode-option").forEach((option) => {
+        option.addEventListener("click", () => {
+          currentMode = option.dataset.mode;
+
+          document
+            .querySelectorAll(".mode-option")
+            .forEach((item) => item.classList.remove("active"));
+
+          option.classList.add("active");
+
+          modeBtn.textContent = {
+            forward: "Forward",
+            reverse: "Reverse",
+            mixed: "Mixed",
+          }[currentMode];
+
+          modeSheet.classList.remove("show");
+
+          if (currentMaterial) updateCard();
+        });
+      });
+
+      closeSheet.addEventListener("click", () =>
+        modeSheet.classList.remove("show"),
+      );
+
+      modeSheet.addEventListener("click", (e) => {
+        if (e.target === modeSheet) modeSheet.classList.remove("show");
+      });
+
+      /* THEME */
+      function setTheme(dark) {
+        document.documentElement.classList.toggle("dark", dark);
+
+        const icon = dark ? "☀" : "☾";
+        themeBtn.textContent = icon;
+        studyThemeBtn.textContent = icon;
+
+        localStorage.setItem("recall-theme", dark ? "dark" : "light");
+      }
+
+      function toggleTheme() {
+        setTheme(!document.documentElement.classList.contains("dark"));
+      }
+
+      themeBtn.addEventListener("click", toggleTheme);
+      studyThemeBtn.addEventListener("click", toggleTheme);
+
+      const savedTheme = localStorage.getItem("recall-theme");
+      setTheme(savedTheme === "dark");
+
+      document.addEventListener("keydown", (e) => {
+        if (!currentMaterial) return;
+
+        if (e.key === " ") {
+          e.preventDefault();
+          flipCard();
+        }
+
+        if (e.key === "ArrowRight") nextBtn.click();
+        if (e.key === "ArrowLeft") prevBtn.click();
+      });
+
+      renderMaterials();
+    </script>
+  </body>
+</html>
